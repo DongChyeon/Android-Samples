@@ -25,7 +25,7 @@ import com.example.compose_mvvm_sample.ui.theme.ComposeMVVMSampleTheme
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
-    uiState: SearchUiState,
+    uiState: ReposUiState,
     modifier: Modifier = Modifier,
     searchBtnOnClick: (String) -> Unit
 ) {
@@ -58,20 +58,20 @@ fun SearchScreen(
             modifier = modifier.height(8.dp)
         )
 
-        when (uiState.state) {
-            UiState.SUCCESS -> {
-                LazyColumn {
-                    items(uiState.repos) {
-                        RepoItem(repo = it, modifier = modifier)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier.fillMaxSize()
+        ) {
+            when (uiState.state) {
+                UiState.SUCCESS -> {
+                    LazyColumn {
+                        items(uiState.repos) {
+                            RepoItem(repo = it, modifier = modifier)
+                        }
                     }
                 }
-            }
 
-            UiState.LOADING -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = modifier.fillMaxSize()
-                ) {
+                UiState.LOADING -> {
                     Text(
                         text = "로딩 중...",
                         style = TextStyle(
@@ -80,13 +80,8 @@ fun SearchScreen(
                         )
                     )
                 }
-            }
 
-            UiState.ERROR -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = modifier.fillMaxSize()
-                ) {
+                UiState.ERROR -> {
                     Text(
                         text = "검색 결과 오류",
                         style = TextStyle(
@@ -95,13 +90,8 @@ fun SearchScreen(
                         )
                     )
                 }
-            }
 
-            UiState.NONE -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = modifier.fillMaxSize()
-                ) {
+                UiState.NONE -> {
                     Text(
                         text = "상단 검색창을 이용해 검색하세요",
                         style = TextStyle(
@@ -182,7 +172,7 @@ fun RepoItem(
 @Composable
 fun PreviewSearchScreen() {
     ComposeMVVMSampleTheme {
-        SearchScreen(uiState = SearchUiState(), searchBtnOnClick = { })
+        SearchScreen(uiState = ReposUiState(), searchBtnOnClick = { })
     }
 }
 

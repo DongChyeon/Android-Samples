@@ -2,7 +2,7 @@ package com.example.compose_mvvm_sample.ui
 
 import com.example.compose_mvvm_sample.data.model.Repo
 
-data class SearchUiState(
+data class ReposUiState(
     val state: UiState = UiState.NONE,
     val repos: List<Repo> = listOf()
 )
