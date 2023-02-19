@@ -3,12 +3,12 @@ package com.example.compose_mvvm_sample.data.di
 import com.example.compose_mvvm_sample.BuildConfig
 import com.example.compose_mvvm_sample.data.api.GithubService
 import com.example.compose_mvvm_sample.data.datasource.GithubDataSource
+import com.example.compose_mvvm_sample.data.exception.ResultCallAdapterFactory
 import com.example.compose_mvvm_sample.data.repository.GithubRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -22,16 +22,9 @@ object NetworkModule {
     @Provides
     fun providesOkHttpClient() = if (BuildConfig.DEBUG) {
         val loggingInterceptor = HttpLoggingInterceptor()
-        val headerInterceptor = Interceptor {
-            val request = it.request()
-                .newBuilder()
-                .build()
-            return@Interceptor it.proceed(request)
-        }
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .addInterceptor(headerInterceptor)
             .build()
     } else {
         OkHttpClient.Builder().build()
@@ -44,6 +37,7 @@ object NetworkModule {
             .client(okHttpClient)
             .baseUrl("https://api.github.com/")
             .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(ResultCallAdapterFactory())
             .build()
 
     @Singleton

@@ -16,6 +16,7 @@ class GithubDataSource @Inject constructor(
 ) {
     fun searchRepos(query: String): Flow<Result<RepoSearchResult>> = flow {
         val result = githubService.searchRepos(query)
+
         if (result.isSuccessful) {
             result.body()?.let {
                 emit(Result.Success(it))
