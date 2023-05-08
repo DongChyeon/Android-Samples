@@ -2,7 +2,7 @@ package com.example.compose_mvvm_sample.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.compose_mvvm_sample.data.Result
+import com.example.compose_mvvm_sample.data.ResultWrapper
 import com.example.compose_mvvm_sample.data.repository.GithubRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,7 +22,7 @@ class ReposViewModel @Inject constructor(
             githubRepository.searchRepos(query)
                 .onStart { _uiState.update { it.copy(state = UiState.LOADING) } }
                 .collect { searchResult ->
-                    if (searchResult is Result.Success) {
+                    if (searchResult is ResultWrapper.Success) {
                         searchResult.data.let { result ->
                             _uiState.update {
                                 it.copy(
@@ -31,10 +31,11 @@ class ReposViewModel @Inject constructor(
                                 )
                             }
                         }
-                    } else {
+                    } else if (searchResult is ResultWrapper.Error) {
                         _uiState.update {
                             it.copy(
                                 state = UiState.ERROR,
+                                errorMessage = searchResult.errorMessage,
                                 repos = listOf()
                             )
                         }

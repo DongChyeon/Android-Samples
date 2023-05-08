@@ -83,7 +83,7 @@ fun SearchScreen(
 
                 UiState.ERROR -> {
                     Text(
-                        text = "검색 결과 오류",
+                        text = uiState.errorMessage,
                         style = TextStyle(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.SemiBold

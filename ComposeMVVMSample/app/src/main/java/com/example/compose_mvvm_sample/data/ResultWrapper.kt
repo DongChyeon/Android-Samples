@@ -1,9 +1,9 @@
 package com.example.compose_mvvm_sample.data
 
-sealed class Result<out R> {
+sealed class ResultWrapper<out R> {
 
-    data class Success<out T>(val data: T) : Result<T>()
-    data class Error(val errorMessage: String) : Result<Nothing>()
+    data class Success<out T>(val data: T) : ResultWrapper<T>()
+    data class Error(val errorMessage: String) : ResultWrapper<Nothing>()
 
     override fun toString(): String {
         return when (this) {

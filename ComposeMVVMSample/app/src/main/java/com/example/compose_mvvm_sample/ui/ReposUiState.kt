@@ -4,6 +4,7 @@ import com.example.compose_mvvm_sample.data.model.Repo
 
 data class ReposUiState(
     val state: UiState = UiState.NONE,
+    val errorMessage: String = "",
     val repos: List<Repo> = listOf()
 )
 
