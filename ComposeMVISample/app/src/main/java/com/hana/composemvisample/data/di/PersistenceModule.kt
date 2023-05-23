@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
 
 @Module
@@ -14,7 +15,10 @@ object PersistenceModule {
 
     @Singleton
     @Provides
-    fun providesGithubDataSource(githubService: GithubService): GithubDataSource =
-        GithubDataSource(githubService)
+    fun providesGithubDataSource(
+        githubService: GithubService,
+        @DispatcherModule.IoDispatcher ioDispatcher: CoroutineDispatcher
+    ): GithubDataSource =
+        GithubDataSource(githubService, ioDispatcher)
 
 }

@@ -2,6 +2,7 @@ package com.hana.composemvisample.data.datasource
 
 import com.hana.composemvisample.data.ResultWrapper
 import com.hana.composemvisample.data.api.GithubService
+import com.hana.composemvisample.data.di.DispatcherModule
 import com.hana.composemvisample.data.model.RepoSearchResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +13,7 @@ import javax.inject.Inject
 
 class GithubDataSource @Inject constructor(
     private val githubService: GithubService,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    @DispatcherModule.IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
     fun searchRepos(query: String): Flow<ResultWrapper<RepoSearchResult>> = flow {
         githubService.searchRepos(query).onSuccess {
