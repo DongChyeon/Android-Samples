@@ -2,6 +2,7 @@ package com.hana.composemvisample.data.exception
 
 import com.google.gson.Gson
 import com.hana.composemvisample.data.model.ErrorResult
+import com.hana.composemvisample.data.util.GsonHelper
 import okhttp3.Request
 import okio.Timeout
 import retrofit2.Call
@@ -25,9 +26,11 @@ class ResultCall<T>(private val delegate: Call<T>) : Call<Result<T>> {
                             )
                         )
                     } else {
-                        val gson = Gson()
                         val errorResponse =
-                            gson.fromJson(response.errorBody()?.string(), ErrorResult::class.java)
+                            GsonHelper.gson.fromJson(
+                                response.errorBody()?.string(),
+                                ErrorResult::class.java
+                            )
 
                         callback.onResponse(
                             this@ResultCall,
