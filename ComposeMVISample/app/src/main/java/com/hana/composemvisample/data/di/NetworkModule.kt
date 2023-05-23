@@ -44,14 +44,5 @@ object NetworkModule {
     @Provides
     fun providesGithubService(retrofit: Retrofit): GithubService =
         retrofit.create(GithubService::class.java)
-
-    @Singleton
-    @Provides
-    fun providesGithubDataSource(githubService: GithubService): GithubDataSource =
-        GithubDataSource(githubService)
-
-    @Singleton
-    @Provides
-    fun providesGithubRepository(githubDataSource: GithubDataSource): GithubRepository =
-        GithubRepository(githubDataSource)
+    
 }
