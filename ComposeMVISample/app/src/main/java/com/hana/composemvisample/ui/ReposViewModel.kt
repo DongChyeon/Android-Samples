@@ -22,7 +22,7 @@ class ReposViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, MainState())
 
     private fun reduceState(current: MainState, event: MainEvent): MainState {
-        return when(event) {
+        return when (event) {
             is MainEvent.Loading -> {
                 current.copy(loading = true, error = null)
             }
@@ -40,15 +40,13 @@ class ReposViewModel @Inject constructor(
             githubRepository.searchRepos(query)
                 .onStart { events.send(MainEvent.Loading) }
                 .collect { searchResult ->
-                    if (searchResult is ResultWrapper.Success) {
-                        searchResult.data.let { result ->
-                            events.send(MainEvent.ShowRepos(repos = result.items))
-                        }
-                    } else if (searchResult is ResultWrapper.Error) {
-                        events.send(MainEvent.ShowError(error = searchResult.errorMessage))
+                    searchResult.isSuccess { result ->
+                        events.send(MainEvent.ShowRepos(repos = result.items))
+                    }
+                    searchResult.isError { errorMessage ->
+                        events.send(MainEvent.ShowError(error = errorMessage))
                     }
                 }
         }
     }
-
 }
