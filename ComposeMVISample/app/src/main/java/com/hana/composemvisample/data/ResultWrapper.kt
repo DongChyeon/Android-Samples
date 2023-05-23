@@ -12,4 +12,17 @@ sealed class ResultWrapper<out R> {
             is Error -> "Error[errorMessage=$errorMessage]"
         }
     }
+
+    inline fun isSuccess(action: (R) -> Unit) {
+        if (this is Success) {
+            action(this.data)
+        }
+    }
+
+    inline fun isError(action: (errorMessage: String) -> Unit) {
+        if (this is Error) {
+            action(this.errorMessage)
+        }
+    }
+
 }

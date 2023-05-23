@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
                 val viewModel: ReposViewModel = viewModel()
                 val state by viewModel.state.collectAsStateWithLifecycle()
 
-                SearchScreen(state = state, searchBtnOnClick = viewModel::searchRepos)
+                SearchScreen(state = state, searchBtnOnClick = viewModel::searchReposPaging)
             }
         }
     }
