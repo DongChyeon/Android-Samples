@@ -1,8 +1,8 @@
 package com.hana.composemvisample.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -18,6 +18,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.example.compose_mvvm_sample.ui.theme.ComposeMVVMSampleTheme
 import com.hana.composemvisample.R
 import com.hana.composemvisample.data.model.Repo
@@ -29,6 +33,9 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
     searchBtnOnClick: (String) -> Unit
 ) {
+
+    val pagingList = state.reposPaging.collectAsLazyPagingItems()
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -73,9 +80,33 @@ fun SearchScreen(
                         )
                     )
                 }
-                state.repos.isNotEmpty() -> {
-                    LazyColumn {
-                        items(state.repos) {
+                pagingList.loadState.refresh is LoadState.Loading -> {
+                    CircularProgressIndicator()
+                }
+            }
+
+            LazyColumn {
+                if (pagingList.loadState.refresh is LoadState.Loading) {
+                    item {
+                        CircularProgressIndicator()
+                    }
+                } else if (pagingList.itemCount == 0) {
+                    item {
+                        Text(
+                            text = "검색 결과가 없습니다.",
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+                } else {
+                    items(
+                        count = pagingList.itemCount,
+                        key = pagingList.itemKey(),
+                        contentType = pagingList.itemContentType()
+                    ) { index ->
+                        pagingList[index]?.let {
                             RepoItem(repo = it, modifier = modifier)
                         }
                     }
