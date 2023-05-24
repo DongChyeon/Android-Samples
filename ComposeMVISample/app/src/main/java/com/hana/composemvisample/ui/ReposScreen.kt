@@ -80,9 +80,6 @@ fun SearchScreen(
                         )
                     )
                 }
-                pagingList.loadState.refresh is LoadState.Loading -> {
-                    CircularProgressIndicator()
-                }
             }
 
             LazyColumn {
