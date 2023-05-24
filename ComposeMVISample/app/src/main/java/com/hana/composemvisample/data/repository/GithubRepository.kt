@@ -22,18 +22,5 @@ class GithubRepository @Inject constructor(
         page: Int = INIT_PAGE_INDEX
     ): Flow<ResultWrapper<RepoSearchResult>> =
         githubDataSource.searchRepos(query, perPage, page)
-
-    fun searchReposPaging(
-        query: String
-    ): Flow<PagingData<Repo>> {
-        return Pager(
-            config = PagingConfig(pageSize = PAGE_SIZE),
-            pagingSourceFactory = {
-                RepoPagingSource(
-                    githubRepository = this,
-                    query = query,
-                )
-            },
-        ).flow
-    }
+    
 }
