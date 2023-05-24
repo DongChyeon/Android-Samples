@@ -3,6 +3,7 @@ package com.hana.composemvisample.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.hana.composemvisample.data.model.Repo
 import com.hana.composemvisample.data.repository.GithubRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,11 +23,6 @@ class ReposViewModel @Inject constructor(
         .runningFold(MainState(), ::reduceState)
         .stateIn(viewModelScope, SharingStarted.Eagerly, MainState())
 
-    init {
-        // TODO 초기 1회 검색을 하지 않으면 초기 로딩처리가 안되요. 아래 한 줄 지우면 무슨 말인지 알 것
-        searchReposPaging("")
-    }
-
     private fun reduceState(current: MainState, event: MainEvent): MainState {
         return when (event) {
             is MainEvent.Loading -> {
@@ -35,7 +31,7 @@ class ReposViewModel @Inject constructor(
             is MainEvent.ShowError -> {
                 current.copy(
                     loading = false,
-                    reposPaging = flowOf(PagingData.empty<Repo>()),
+                    reposPaging = flowOf(),
                     error = event.error
                 )
             }
@@ -46,10 +42,7 @@ class ReposViewModel @Inject constructor(
     }
 
     fun searchReposPaging(query: String) = viewModelScope.launch {
-        githubRepository.searchReposPaging(query).onStart {
-            // TODO loading State값이 변화하지 않아요.
-            events.send(MainEvent.Loading)
-        }.collect {
+        githubRepository.searchReposPaging(query).collectLatest {
             events.send(MainEvent.ShowReposPaging(repos = flowOf(it)))
         }
     }
