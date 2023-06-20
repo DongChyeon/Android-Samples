@@ -2,11 +2,13 @@ package com.hana.radargraphsample
 
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -22,7 +24,7 @@ import kotlin.math.sin
 
 @Composable
 fun RadarChart(
-    data: List<RadarData>,
+    data: List<ObjectData>,
     modifier: Modifier = Modifier,
     strokeColor: Color = Color.Black,
     fillColor: Color = Color.Black.copy(alpha = 0.3f),
@@ -34,7 +36,7 @@ fun RadarChart(
     Box(modifier = modifier) {
         Canvas(modifier = modifier.size(300.dp)) {
             drawRadarChart(data, strokeColor, fillColor, strokeWidth, maxValue)
-            drawLabels(data, labelColor, labelSize)
+            drawLabels(data[0].data, labelColor, labelSize)
         }
     }
 }
@@ -67,7 +69,7 @@ private fun DrawScope.drawLabels(data: List<RadarData>, textColor: Color, textSi
 }
 
 private fun DrawScope.drawRadarChart(
-    data: List<RadarData>,
+    data: List<ObjectData>,
     strokeColor: Color,
     fillColor: Color,
     strokeWidth: Dp,
@@ -92,16 +94,28 @@ private fun DrawScope.drawRadarChart(
             strokeWidth = strokeWidth.toPx()
         )
     }
-     */
+    */
 
     for (i: Int in 1..maxValue.toInt()) {
-        drawPolygon(centerX, centerY, radius, i.toFloat(), maxValue, data.size, strokeColor, strokeWidth)
+        drawPolygon(centerX, centerY, radius, i.toFloat(), maxValue, data[0].data.size, strokeColor, strokeWidth)
     }
 
-    drawPath(
-        path = getPath(data, centerX, centerY, radius, maxValue),
-        color = fillColor
-    )
+    for (wine in data) {
+        drawPath(
+            path = getPath(wine.data, centerX, centerY, radius, maxValue),
+            color = fillColor,
+            style = Stroke(width = 3.dp.toPx())
+        )
+
+        drawDot(
+            data = wine.data,
+            centerX = centerX,
+            centerY = centerY,
+            radius = radius,
+            maxValue = maxValue,
+            fillColor = fillColor
+        )
+    }
 }
 
 private fun DrawScope.drawPolygon(
@@ -130,6 +144,28 @@ private fun DrawScope.drawPolygon(
 
     path.close()
     drawPath(path = path, color = color, style = Stroke(width = strokeWidth.toPx()))
+}
+
+private fun DrawScope.drawDot(
+    data: List<RadarData>,
+    centerX: Float,
+    centerY: Float,
+    radius: Float,
+    maxValue: Float,
+    fillColor: Color
+) {
+    data.forEachIndexed { index, radarData ->
+        val angle = (2 * Math.PI / data.size) * index + (-2 * Math.PI / 4).toFloat()
+        val value = radarData.value.coerceIn(0f, maxValue)
+        // value / maxValue 만큼 거리 이동
+        val x = centerX + radius * value / maxValue * cos(angle).toFloat()
+        val y = centerY + radius * value / maxValue * sin(angle).toFloat()
+
+        Log.d("x 좌표", "$x ${centerX + radius * value / maxValue * cos(angle).toFloat()} $centerX ${cos(angle)} $angle $value / $maxValue")
+        Log.d("y 좌표", "$y ${sin(angle)}")
+
+        drawCircle(color = fillColor, radius = 10f, center = Offset(x, y))
+    }
 }
 
 private fun getPath(
@@ -164,11 +200,26 @@ private fun getPath(
 fun PreviewRadarGraph() {
     RadarChart(
         data = listOf(
-        RadarData("당도", 2f),
-        RadarData("여운", 3f),
-        RadarData("알코올", 4f),
-        RadarData("탄닌", 3f),
-        RadarData("바디", 2f),
-        RadarData("산도", 5f)
-    ))
+            ObjectData(
+                listOf(
+                    RadarData("당도", 2f),
+                    RadarData("여운", 3f),
+                    RadarData("알코올", 4f),
+                    RadarData("탄닌", 3f),
+                    RadarData("바디", 2f),
+                    RadarData("산도", 5f)
+                )
+            ),
+            ObjectData(
+                listOf(
+                    RadarData("당도", 1f),
+                    RadarData("여운", 2f),
+                    RadarData("알코올", 3f),
+                    RadarData("탄닌", 4f),
+                    RadarData("바디", 3f),
+                    RadarData("산도", 4f)
+                )
+            )
+        )
+    )
 }
