@@ -2,9 +2,11 @@ package com.hana.composemvisample.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.compose.collectAsLazyPagingItems
-import com.hana.composemvisample.data.model.Repo
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import com.hana.composemvisample.data.datasource.RepoPagingSource
+import com.hana.composemvisample.data.datasource.RepoPagingSource.Companion.PAGE_SIZE
 import com.hana.composemvisample.data.repository.GithubRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -29,11 +31,7 @@ class ReposViewModel @Inject constructor(
                 current.copy(loading = true, error = null)
             }
             is MainEvent.ShowError -> {
-                current.copy(
-                    loading = false,
-                    reposPaging = flowOf(),
-                    error = event.error
-                )
+                current.copy(loading = false, error = event.error)
             }
             is MainEvent.ShowReposPaging -> {
                 current.copy(loading = false, reposPaging = event.repos, error = null)
@@ -42,9 +40,19 @@ class ReposViewModel @Inject constructor(
     }
 
     fun searchReposPaging(query: String) = viewModelScope.launch {
-        githubRepository.searchReposPaging(query).collectLatest {
-            events.send(MainEvent.ShowReposPaging(repos = flowOf(it)))
-        }
+        events.send(
+            MainEvent.ShowReposPaging(
+                repos = Pager(
+                    config = PagingConfig(pageSize = PAGE_SIZE),
+                    pagingSourceFactory = {
+                        RepoPagingSource(
+                            githubRepository = githubRepository,
+                            query = query,
+                        )
+                    },
+                ).flow.cachedIn(viewModelScope)
+            )
+        )
     }
 
     // 기존 리스트로 가져오는 소스
