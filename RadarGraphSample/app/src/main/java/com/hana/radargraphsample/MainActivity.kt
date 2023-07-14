@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.hana.radargraphsample.ui.theme.RadarGraphSampleTheme
 
@@ -44,25 +45,27 @@ fun MainScreen(
     var acidity2 by remember { mutableStateOf("") }
 
     val data = listOf(
-        ObjectData(
-            listOf(
-                RadarData("당도", 0f),
-                RadarData("여운", 0f),
-                RadarData("알코올", 0f),
-                RadarData("탄닌", 0f),
-                RadarData("바디", 0f),
-                RadarData("산도", 0f)
-            )
+        RadarData(
+            data = listOf(
+                WineData("당도", 0f),
+                WineData("여운", 0f),
+                WineData("알코올", 0f),
+                WineData("탄닌", 0f),
+                WineData("바디", 0f),
+                WineData("산도", 0f)
+            ),
+            color = Color.Red
         ),
-        ObjectData(
-            listOf(
-                RadarData("당도", 0f),
-                RadarData("여운", 0f),
-                RadarData("알코올", 0f),
-                RadarData("탄닌", 0f),
-                RadarData("바디", 0f),
-                RadarData("산도", 0f)
-            )
+        RadarData(
+            data = listOf(
+                WineData("당도", 0f),
+                WineData("여운", 0f),
+                WineData("알코올", 0f),
+                WineData("탄닌", 0f),
+                WineData("바디", 0f),
+                WineData("산도", 0f)
+            ),
+            color = Color.Blue
         )
     )
 
@@ -104,25 +107,27 @@ fun MainScreen(
 
             Button(onClick = {
                 dataState.value = listOf(
-                    ObjectData(
-                        listOf(
-                            RadarData("당도", sweetness1.toFloat()),
-                            RadarData("여운", aftertaste1.toFloat()),
-                            RadarData("알코올", alcohol1.toFloat()),
-                            RadarData("탄닌", tannin1.toFloat()),
-                            RadarData("바디", body1.toFloat()),
-                            RadarData("산도", acidity1.toFloat())
-                        )
+                    RadarData(
+                        data = listOf(
+                            WineData("당도", sweetness1.toFloat()),
+                            WineData("여운", aftertaste1.toFloat()),
+                            WineData("알코올", alcohol1.toFloat()),
+                            WineData("탄닌", tannin1.toFloat()),
+                            WineData("바디", body1.toFloat()),
+                            WineData("산도", acidity1.toFloat())
+                        ),
+                        color = Color.Red
                     ),
-                    ObjectData(
-                        listOf(
-                            RadarData("당도", sweetness2.toFloat()),
-                            RadarData("여운", aftertaste2.toFloat()),
-                            RadarData("알코올", alcohol2.toFloat()),
-                            RadarData("탄닌", tannin2.toFloat()),
-                            RadarData("바디", body2.toFloat()),
-                            RadarData("산도", acidity2.toFloat())
-                        )
+                    RadarData(
+                        data = listOf(
+                            WineData("당도", sweetness2.toFloat()),
+                            WineData("여운", aftertaste2.toFloat()),
+                            WineData("알코올", alcohol2.toFloat()),
+                            WineData("탄닌", tannin2.toFloat()),
+                            WineData("바디", body2.toFloat()),
+                            WineData("산도", acidity2.toFloat())
+                        ),
+                        color = Color.Blue
                     ),
                 )
             }) {

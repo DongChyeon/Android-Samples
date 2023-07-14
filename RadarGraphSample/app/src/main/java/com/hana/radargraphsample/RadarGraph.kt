@@ -2,11 +2,16 @@ package com.hana.radargraphsample
 
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -19,29 +24,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
 fun RadarChart(
-    data: List<ObjectData>,
+    data: List<RadarData>,
     modifier: Modifier = Modifier,
     strokeColor: Color = Color.Black,
-    fillColor: Color = Color.Black.copy(alpha = 0.3f),
     strokeWidth: Dp = 1.dp,
     maxValue: Float = 5f,
     labelColor: Color = Color.Black,
     labelSize: Int = 16
 ) {
+    val animatedProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(data) {
+        launch {
+            animatedProgress.snapTo(0f)
+            animatedProgress.animateTo(1f, animationSpec = tween(1000))
+        }
+    }
+
     Box(modifier = modifier) {
         Canvas(modifier = modifier.size(300.dp)) {
-            drawRadarChart(data, strokeColor, fillColor, strokeWidth, maxValue)
+            drawRadarChart(data, strokeColor, strokeWidth, maxValue, animatedProgress.value)
             drawLabels(data[0].data, labelColor, labelSize)
         }
     }
 }
 
-private fun DrawScope.drawLabels(data: List<RadarData>, textColor: Color, textSize: Int) {
+private fun DrawScope.drawLabels(data: List<WineData>, textColor: Color, textSize: Int) {
     val centerX = size.width / 2
     val centerY = size.height / 2
     val radius = (size.width / 2) * 0.95
@@ -69,15 +83,15 @@ private fun DrawScope.drawLabels(data: List<RadarData>, textColor: Color, textSi
 }
 
 private fun DrawScope.drawRadarChart(
-    data: List<ObjectData>,
+    data: List<RadarData>,
     strokeColor: Color,
-    fillColor: Color,
     strokeWidth: Dp,
     maxValue: Float,
+    animatedProgress: Float
 ) {
     val centerX = size.width / 2
     val centerY = size.height / 2
-    val radius = (size.width / 2) * 0.8f
+    val radius = (size.width / 2) * 0.8f * animatedProgress
 
     /* 중앙에서 각 라벨로 뻗어나가는 경계선
     val angleStep = (2 * Math.PI / data.size).toFloat()
@@ -102,9 +116,8 @@ private fun DrawScope.drawRadarChart(
 
     for (wine in data) {
         drawPath(
-            path = getPath(wine.data, centerX, centerY, radius, maxValue),
-            color = fillColor,
-            style = Stroke(width = 3.dp.toPx())
+            path = getPath(wine.data, centerX, centerY, radius, maxValue, animatedProgress),
+            color = wine.color.copy(0.5f),
         )
 
         drawDot(
@@ -113,7 +126,7 @@ private fun DrawScope.drawRadarChart(
             centerY = centerY,
             radius = radius,
             maxValue = maxValue,
-            fillColor = fillColor
+            fillColor = wine.color.copy(0.5f)
         )
     }
 }
@@ -147,7 +160,7 @@ private fun DrawScope.drawPolygon(
 }
 
 private fun DrawScope.drawDot(
-    data: List<RadarData>,
+    data: List<WineData>,
     centerX: Float,
     centerY: Float,
     radius: Float,
@@ -161,28 +174,27 @@ private fun DrawScope.drawDot(
         val x = centerX + radius * value / maxValue * cos(angle).toFloat()
         val y = centerY + radius * value / maxValue * sin(angle).toFloat()
 
-        Log.d("x 좌표", "$x ${centerX + radius * value / maxValue * cos(angle).toFloat()} $centerX ${cos(angle)} $angle $value / $maxValue")
-        Log.d("y 좌표", "$y ${sin(angle)}")
-
         drawCircle(color = fillColor, radius = 10f, center = Offset(x, y))
     }
 }
 
 private fun getPath(
-    data: List<RadarData>,
+    data: List<WineData>,
     centerX: Float,
     centerY: Float,
     radius: Float,
-    maxValue: Float
+    maxValue: Float,
+    animatedProgress: Float,
 ): Path {
     val path = Path()
 
     data.forEachIndexed { index, radarData ->
         val angle = (2 * Math.PI / data.size) * index + (-2 * Math.PI / 4).toFloat()
         val value = radarData.value.coerceIn(0f, maxValue)
-        // value / maxValue 만큼 거리 이동
-        val x = centerX + radius * value / maxValue * cos(angle).toFloat()
-        val y = centerY + radius * value / maxValue * sin(angle).toFloat()
+        val animatedRadius = radius * value / maxValue * animatedProgress
+
+        val x = centerX + animatedRadius * cos(angle).toFloat()
+        val y = centerY + animatedRadius * sin(angle).toFloat()
 
         if (index == 0) {
             path.moveTo(x, y)
@@ -190,36 +202,43 @@ private fun getPath(
             path.lineTo(x, y)
         }
     }
-
     path.close()
+
     return path
 }
 
 @Preview
 @Composable
-fun PreviewRadarGraph() {
-    RadarChart(
-        data = listOf(
-            ObjectData(
-                listOf(
-                    RadarData("당도", 2f),
-                    RadarData("여운", 3f),
-                    RadarData("알코올", 4f),
-                    RadarData("탄닌", 3f),
-                    RadarData("바디", 2f),
-                    RadarData("산도", 5f)
-                )
-            ),
-            ObjectData(
-                listOf(
-                    RadarData("당도", 1f),
-                    RadarData("여운", 2f),
-                    RadarData("알코올", 3f),
-                    RadarData("탄닌", 4f),
-                    RadarData("바디", 3f),
-                    RadarData("산도", 4f)
+fun PreviewAnimatedRadarGraph() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        RadarChart(
+            data = listOf(
+                RadarData(
+                    data = listOf(
+                        WineData("당도", 2f),
+                        WineData("여운", 3f),
+                        WineData("알코올", 4f),
+                        WineData("탄닌", 3f),
+                        WineData("바디", 2f),
+                        WineData("산도", 5f)
+                    ),
+                    color = Color.Red
+                ),
+                RadarData(
+                    data = listOf(
+                        WineData("당도", 1f),
+                        WineData("여운", 2f),
+                        WineData("알코올", 3f),
+                        WineData("탄닌", 4f),
+                        WineData("바디", 3f),
+                        WineData("산도", 4f)
+                    ),
+                    color = Color.Blue
                 )
             )
         )
-    )
+    }
 }
